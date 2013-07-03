@@ -448,23 +448,31 @@ var renderGameEnd = function() {
 var renderStartScreen = function() {
 
 	ctx.fillStyle="rgba(0,0,0,0.01)";
-	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 195)/2,300,150);
+	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 295)/2,300,250);
 	
 	ctx.fillStyle="#DADADA";
-	ctx.fillRect((canvas.width - 300)/2,(canvas.height - 200)/2,300,150);
+	ctx.fillRect((canvas.width - 300)/2,(canvas.height - 300)/2,300,250);
 
 	ctx.fillStyle = "#000000";
 	ctx.font = "26px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Frank's Dungeon", canvas.width/2 - 95, canvas.height/2 - 80);
-	ctx.fillText("Game O' Death", canvas.width/2 - 85, canvas.height/2 - 50);
-
+	ctx.fillText("Frank's Dungeon", canvas.width/2 - 95, canvas.height/2 - 120);
+	ctx.fillText("Game O' Death", canvas.width/2 - 85, canvas.height/2 - 90);
+	
 	ctx.fillStyle = "#000000";
 	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Click to start", canvas.width/2 - 40, canvas.height/2);
+	
+	ctx.fillText("Gather gold; dodge death.", canvas.width/2 - 85, canvas.height/2 - 40);
+	ctx.fillText("Move fast, ding more.", canvas.width/2 - 70, canvas.height/2 - 15);
+	ctx.fillText("Level up to awesome.", canvas.width/2 - 75, canvas.height/2 + 10);
+	
+	ctx.fillStyle = "#FF0000";
+	ctx.font = "italic 16px Helvetica";
+	
+	ctx.fillText("Click to start", canvas.width/2 - 40, canvas.height/2 + 60);
 	
 };
 
