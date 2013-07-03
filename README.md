@@ -10,3 +10,10 @@ Roadmap
 * Create a "Ding" animation
 * Create a fade between draws after collect
 * Create a burn-down timer and integrate it as a combo meter
+* Classes
+  * Theif (Double points For coins, 1 HP)
+  * Warrior (5 HP)
+  * Wizard (double-click to clear obstacles but reset timer, 2 HP)
+  * Necro (2 HP, refresh combo counter by dying)
+  * Time Mage (double-click to freeze timer but lose HP, 2 HP)
+  * More to come...
