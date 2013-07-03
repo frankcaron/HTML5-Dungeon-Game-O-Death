@@ -80,10 +80,11 @@ var lastCatch = 0;
 var thisCatch = 0;
 
 //XP
-var baseXP = 10;
+var baseXP = 25;
 var xp = 0;
 var level = 0;
 var xpTill = level*4 + 100;
+var xpAwarded = 0;
 
 /* ==============================================
  * 
@@ -106,6 +107,7 @@ addEventListener('mousemove', function(e) {
 			document.write("Game Over<br />");
 			document.write("<br />Level: " + level);
 			document.write("<br />Kills: " + monstersCaught);
+			document.write("<br /><br /><a href='game.html'>Retry</a>");
 		}
         
       }, false);
@@ -173,9 +175,15 @@ var update = function (modifier) {
 		&& hero.y <= (monster.y + 32)
 		&& monster.y <= (hero.y + 32)
 	) {
-		++monstersCaught;
+		++monstersCaught;	
+		
 		thisCatch = Math.floor(timer);
-		xpTill -= Math.floor(xp + ((lastCatch - thisCatch + baseXP) * (level/2 + 1)));
+		xpAwarded = Math.floor(xp + (((lastCatch - thisCatch)*10 + baseXP) * (level/2 + 1)));
+		
+		if (xpAwarded < 0) { xpAwarded = 1; }
+		
+		renderXP();	
+		xpTill -= xpAwarded;
 		if (xpTill <= 0) {
 			level++;
 			xpTill = level*2 + 100;
@@ -205,10 +213,10 @@ var renderUI = function () {
 	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Score: " + monstersCaught, 32, 10);
-	ctx.fillText("Timer: " + Math.floor(timer), 32, 30);
-	ctx.fillText("Level: " + level, 32, 50);
-	ctx.fillText("Next: " + xpTill, 32, 70);
+	ctx.fillText("Score: " + monstersCaught, 10, 10);
+	ctx.fillText("Timer: " + Math.floor(timer), 130, 10);
+	ctx.fillText("Level: " + level, 250, 10);
+	ctx.fillText("Next: " + xpTill, 380, 10);
 }
 
 var renderActors = function () {
@@ -227,6 +235,22 @@ var renderActors = function () {
 	if (obstacleReady) {
 		ctx.drawImage(obstacleImage, obst.x, obst.y);
 	}
+}
+
+//Draw XP
+var renderXP = function () {	
+	var alpha = 1.0,   // full opacity
+    fadeInt = setInterval(function () {
+        ctx.fillStyle = "rgba(255, 0, 0, " + alpha + ")";
+        ctx.font = "12px Helvetica";
+		ctx.textAlign = "left";
+		ctx.textBaseline = "top";
+        ctx.fillText("XP " + xpAwarded, hero.x + 4, hero.y + 40);
+        alpha = alpha - 0.01; // decrease opacity (fade out)
+        if (alpha < 0) {
+            clearInterval(fadeInt);
+        }
+    }, 1); 
 }
 
 // Draw everything
