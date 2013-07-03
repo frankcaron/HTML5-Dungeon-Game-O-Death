@@ -306,7 +306,7 @@ var performSpecial = function () {
   			break;
 		default:
   			//No class
-  			renderLevelUpFlash();
+  			renderExplosion();
 	}
 }
 
@@ -328,15 +328,32 @@ var update = function (modifier) {
  * 
  * ============================================== */
  
+//Render explosion special move
+var renderExplosion = function () {
+	var alpha = 1.0;   // full opacity
+	var circleMaxRadius = 32;
+	
+    fadeCircle = setInterval(function () {
+	    ctx.beginPath();
+      	ctx.arc(hero.x + 16, hero.y + 16, circleMaxRadius, 0, 2 * Math.PI, false);
+      	ctx.lineWidth = 5;
+      	ctx.strokeStyle = "rgba(255, 0, 0, " + alpha + ")";
+      	ctx.stroke();
+    	circleMaxRadius += 1;
+    	alpha = alpha - 0.01; // decrease opacity (fade out)
+        if (alpha < 0) {
+            clearInterval(fadeCircle);
+        }
+    }, 1); 
+}; 
+ 
 //Render level up flash
 var renderLevelUpFlash = function () {
 	var alpha = 1.0,   // full opacity
     fadeBox = setInterval(function () {
-    
     	//White Flash
         ctx.fillStyle = "rgba(255, 255, 255, " + alpha + ")";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
         
         //Text
         ctx.fillStyle="rgba(0,0,0, " + alpha + ")";
@@ -344,8 +361,7 @@ var renderLevelUpFlash = function () {
 		ctx.textAlign = "left";
 		ctx.textBaseline = "top";
 		ctx.fillText("DING!", canvas.width/2 - 25, canvas.height/2);
-        
-        
+    
         alpha = alpha - 0.01; // decrease opacity (fade out)
         if (alpha < 0) {
             clearInterval(fadeBox);
