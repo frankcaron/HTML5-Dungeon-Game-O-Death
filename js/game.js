@@ -266,6 +266,7 @@ var levelUp = function() {
 		xpTill = level*2 + 100;
 		xpToLevel = level*2 + 100;
 		xp = 0;
+		renderLevelUpFlash();
 	}
 };
 
@@ -302,6 +303,31 @@ var update = function (modifier) {
  * 
  * ============================================== */
  
+//Render level up flash
+var renderLevelUpFlash = function () {
+	var alpha = 1.0,   // full opacity
+    fadeBox = setInterval(function () {
+    
+    	//White Flash
+        ctx.fillStyle = "rgba(255, 255, 255, " + alpha + ")";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        
+        //Text
+        ctx.fillStyle="rgba(0,0,0, " + alpha + ")";
+		ctx.font = "22px Helvetica";
+		ctx.textAlign = "left";
+		ctx.textBaseline = "top";
+		ctx.fillText("DING!", canvas.width/2 - 25, canvas.height/2);
+        
+        
+        alpha = alpha - 0.01; // decrease opacity (fade out)
+        if (alpha < 0) {
+            clearInterval(fadeBox);
+        }
+    }, 1); 
+};
+
 //Render the XP bar
 var renderXPBar = function () {
 
@@ -310,10 +336,10 @@ var renderXPBar = function () {
 	
 	if (xpBarWidth > canvas.width - 40) { xpBarWidth = canvas.width - 40; }
 	
-	ctx.fillStyle="rgba(0,255,0,0.2)";
+	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.fillRect(20, canvas.height - 20, xpBarWidth, 10);
 	
-	ctx.fillStyle="rgba(0,255,0,1)";
+	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.font = "12px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
@@ -323,7 +349,7 @@ var renderXPBar = function () {
 
 //Render the combo counter
 var renderComboCounter = function () {
-	ctx.fillStyle="rgba(0,255,0,0.2)";
+	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.fillRect(20, 20, canvas.width - 40, 10);
 };
 
@@ -331,7 +357,7 @@ var renderComboCounter = function () {
 var renderUI = function () {
 	
 	//Timer
-	ctx.fillStyle="rgba(0,255,0,1)";
+	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.font = "12px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
@@ -344,7 +370,7 @@ var renderUI = function () {
 	renderXPBar();
 	
 	//Score
-	ctx.fillStyle="rgba(0,255,0,1)";
+	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.font = "12px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
@@ -412,7 +438,7 @@ var renderGameEnd = function() {
 	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Click to retry", canvas.width/2 - 50, canvas.height/2);
+	ctx.fillText("Click to retry", canvas.width/2 - 40, canvas.height/2);
 	
 	gameOver = true;
 	
@@ -438,7 +464,7 @@ var renderStartScreen = function() {
 	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Click to start", canvas.width/2 - 30, canvas.height/2);
+	ctx.fillText("Click to start", canvas.width/2 - 40, canvas.height/2);
 	
 };
 
