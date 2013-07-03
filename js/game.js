@@ -152,18 +152,21 @@ var initGame = function () {
 
 // Track The Mouse
 addEventListener('mousemove', function(e) {
-        var mousePos = getMousePos(canvas, e);
+
+	//Safari Fix
+	e.preventDefault();
+	
+    var mousePos = getMousePos(canvas, e);
         
-        if (!blocked) {
-       		//Move the hero to match the mouse
-			hero.x = mousePos.x - heroImage.width/2;
-			hero.y = mousePos.y - heroImage.height/2;
-		} else {
-			//End game
-			renderGameEnd();
-		}
-        
-      }, false);
+    if (!blocked) {
+       	//Move the hero to match the mouse
+		hero.x = mousePos.x - heroImage.width/2;
+		hero.y = mousePos.y - heroImage.height/2;
+	} else {
+		//End game
+		renderGameEnd();
+	}
+}, false);
       
 //Get the mouse's current position
 function getMousePos (canvas, e) {
@@ -176,6 +179,8 @@ function getMousePos (canvas, e) {
 
 //Track mousedown on gameover
 addEventListener('mousedown', function (e) {
+	//Safari Fix
+	e.preventDefault();
 	
 	//If you click before the game has started, start the game.
 	if (!gameStarted && !gameOver) { 
@@ -330,6 +335,8 @@ var update = function (modifier) {
  
 //Render explosion special move
 var renderExplosion = function () {
+	
+	//Temp vars
 	var alpha = 1.0;   // full opacity
 	var circleMaxRadius = 32;
 	
@@ -339,8 +346,8 @@ var renderExplosion = function () {
       	ctx.lineWidth = 5;
       	ctx.strokeStyle = "rgba(255, 0, 0, " + alpha + ")";
       	ctx.stroke();
-    	circleMaxRadius += 1;
-    	alpha = alpha - 0.01; // decrease opacity (fade out)
+    	circleMaxRadius = circleMaxRadius + 5;
+    	alpha = alpha - 0.05 ; // decrease opacity (fade out)
         if (alpha < 0) {
             clearInterval(fadeCircle);
         }
@@ -541,6 +548,7 @@ var cleanIntervals = function () {
 	clearInterval(fadeInt);
 	clearInterval(fadeBox);
 	clearInterval(gameId);
+	clearInterval(fadeCircle);
 }
 
 // Render the game
