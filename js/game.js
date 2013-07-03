@@ -50,21 +50,40 @@ monsterImage.onload = function () {
 };
 monsterImage.src = "images/monster.png";
 
+// Obstacle image
+var obstacleReady = false;
+var obstacleImage = new Image();
+obstacleImage.onload = function () {
+	obstacleReady = true;
+};
+obstacleImage.src = "images/obstacle.png";
+
 // Game objects
 var hero = {
 	speed: 256 // movement in pixels per second
 };
 var monster = {};
 var monstersCaught = 0;
+var obst = {};
 
 // Handle keyboard controls
 var keysDown = {};
 
-//Initial hero position flag
+// Hero position helpers
 var init = true;
+var blocked = false;
+var placedObst = false;
 
-//Timer
+// Timer
 var timer = 0;
+var lastCatch = 0;
+var thisCatch = 0;
+
+//XP
+var baseXP = 10;
+var xp = 0;
+var level = 0;
+var xpTill = level*4 + 100;
 
 /* ==============================================
  * 
@@ -78,9 +97,16 @@ var timer = 0;
 addEventListener('mousemove', function(e) {
         var mousePos = getMousePos(canvas, e);
         
-       	//Move the hero to match the mouse
-		hero.x = mousePos.x - heroImage.width/2;
-		hero.y = mousePos.y - heroImage.height/2;
+        if (!blocked) {
+       		//Move the hero to match the mouse
+			hero.x = mousePos.x - heroImage.width/2;
+			hero.y = mousePos.y - heroImage.height/2;
+		} else {
+
+			document.write("Game Over<br />");
+			document.write("<br />Level: " + level);
+			document.write("<br />Kills: " + monstersCaught);
+		}
         
       }, false);
       
@@ -104,16 +130,37 @@ function getMousePos(canvas, e) {
 
 // Reset the game when the player catches a monster
 var reset = function () {
+
+
 	//Reset the hero's position if on the first run
 	if (init) {
 		hero.x = canvas.width / 2;
 		hero.y = canvas.height / 2;
 		init = false;
 	}
+	
+	//Reset Obst
+	placedObst = false;
 
 	// Throw the monster somewhere on the screen randomly
 	monster.x = 32 + (Math.random() * (canvas.width - 64));
 	monster.y = 32 + (Math.random() * (canvas.height - 64));
+	
+	while (!placedObst) {
+		
+		// Throw the monster somewhere on the screen randomly
+		obst.x = 32 + (Math.random() * (canvas.width - 64));
+		obst.y = 32 + (Math.random() * (canvas.height - 64));
+	
+		if (
+			hero.x <= (obst.x + 32)
+			&& obst.x <= (hero.x + 32)
+			&& hero.y <= (obst.y + 32)
+			&& obst.y <= (hero.y + 32)
+		) {
+			placedObst = false;
+		} else { placedObst = true; }
+	}
 };
 
 // Update game objects
@@ -127,8 +174,22 @@ var update = function (modifier) {
 		&& monster.y <= (hero.y + 32)
 	) {
 		++monstersCaught;
+		thisCatch = Math.floor(timer);
+		xpTill -= Math.floor(xp + ((lastCatch - thisCatch + baseXP) * (level/2 + 1)));
+		if (xpTill <= 0) {
+			level++;
+			xpTill = level*2 + 100;
+		}
+		lastCatch = thisCatch;
 		reset();
-	}
+	} else if (
+		hero.x <= (obst.x + 32)
+		&& obst.x <= (hero.x + 32)
+		&& hero.y <= (obst.y + 32)
+		&& obst.y <= (hero.y + 32)
+	) {
+		blocked = true;
+	} else { blocked = false; }
 };
 
 /* ==============================================
@@ -141,11 +202,13 @@ var update = function (modifier) {
 
 var renderUI = function () {
 	ctx.fillStyle = "#000000";
-	ctx.font = "24px Helvetica";
+	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Score: " + monstersCaught, 32, 32);
-	ctx.fillText("Timer: " + Math.floor(timer), 32, 64);
+	ctx.fillText("Score: " + monstersCaught, 32, 10);
+	ctx.fillText("Timer: " + Math.floor(timer), 32, 30);
+	ctx.fillText("Level: " + level, 32, 50);
+	ctx.fillText("Next: " + xpTill, 32, 70);
 }
 
 var renderActors = function () {
@@ -159,6 +222,10 @@ var renderActors = function () {
 
 	if (monsterReady) {
 		ctx.drawImage(monsterImage, monster.x, monster.y);
+	}
+	
+	if (obstacleReady) {
+		ctx.drawImage(obstacleImage, obst.x, obst.y);
 	}
 }
 
