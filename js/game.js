@@ -66,6 +66,7 @@ obstacleImage.src = "images/obstacle.png";
 var hero = {
 	speed: 256 // movement in pixels per second
 };
+var classType = 0;
 var monster = {};
 var monstersCaught = 0;
 var obst = {};
@@ -97,12 +98,14 @@ var xpBarWidth = 0;
 var gameId;
 var gameOver = false;
 var gameStarted = false;
+var characterSelected = false;
 
 //Reset function
-var initGame = function() {
+var initGame = function () {
 	hero = {
 		speed: 256 // movement in pixels per second
 	};
+	classType = 0;
 	monster = {};
 	monstersCaught = 0;
 	obst = {};
@@ -131,6 +134,7 @@ var initGame = function() {
 	//Game
 	gameOver = false;
 	gameStarted = false;
+	characterSelected = false;
 	
 	//Start Game
 	reset();
@@ -162,7 +166,7 @@ addEventListener('mousemove', function(e) {
       }, false);
       
 //Get the mouse's current position
-function getMousePos(canvas, e) {
+function getMousePos (canvas, e) {
     var rect = canvas.getBoundingClientRect();
     return {
         x: e.clientX - rect.left,
@@ -171,10 +175,18 @@ function getMousePos(canvas, e) {
 }
 
 //Track mousedown on gameover
-addEventListener('mousedown', function(e) {
-	if (!gameStarted) { gameStarted = true; }
-	if (gameOver) { 
-		//document.location.reload(true); 
+addEventListener('mousedown', function (e) {
+	
+	//If you click before the game has started, start the game.
+	if (!gameStarted && !gameOver) { 
+		gameStarted = true; 
+	} else if (!gameOver) {
+	//If you click while the game is going, do your special move
+		performSpecial();
+	}
+	
+	//If you click after a game over, restart the game.
+	if (gameOver) {  
 		initGame();
 	}
 }, false);
@@ -198,14 +210,14 @@ var resetHeroIfNecessary = function () {
 };
 
 //Reset the monster
-var resetMonster = function() {
+var resetMonster = function () {
 	// Throw the monster somewhere on the screen randomly
 	monster.x = 32 + (Math.random() * (canvas.width - 64));
 	monster.y = 32 + (Math.random() * (canvas.height - 64));
 };
 
 //Reset the obstacle
-var resetObstacle = function() {
+var resetObstacle = function () {
 
 	placedObst = false;
 	
@@ -239,7 +251,7 @@ var reset = function () {
 };
 
 //Hit Detection - Player and gold
-var detectMonsterCatch = function() {
+var detectMonsterCatch = function () {
 	if (
 		hero.x <= (monster.x + 32)
 		&& monster.x <= (hero.x + 32)
@@ -250,7 +262,7 @@ var detectMonsterCatch = function() {
 };
 
 //Hit Detection - Player and obstacle
-var detectPlayerHit = function() {
+var detectPlayerHit = function () {
 	if (
 		hero.x <= (obst.x + 32)
 		&& obst.x <= (hero.x + 32)
@@ -260,7 +272,7 @@ var detectPlayerHit = function() {
 };
 
 //Process the level up
-var levelUp = function() {
+var levelUp = function () {
 	if (xpTill <= 0) {
 		level += 1;
 		xpTill = level*2 + 100;
@@ -271,7 +283,7 @@ var levelUp = function() {
 };
 
 //Award XP
-var awardXP = function() {
+var awardXP = function () {
 	thisCatch = Math.floor(timer);
 	xpAwarded = Math.floor(xp + (((lastCatch - thisCatch)*10 + baseXP) * (level/2 + 1)));
 	if (xpAwarded < 0) { xpAwarded = 1; }
@@ -284,6 +296,19 @@ var awardXP = function() {
 	//Process level up math
 	levelUp();
 };
+
+//Perform a special move
+var performSpecial = function () {
+	switch(classType)
+	{
+		case 1:
+  			//Class 1
+  			break;
+		default:
+  			//No class
+  			renderLevelUpFlash();
+	}
+}
 
 // Update game objects
 var update = function (modifier) {
@@ -413,7 +438,7 @@ var renderXP = function () {
 };
 
 //Render the game over screen
-var renderGameEnd = function() {
+var renderGameEnd = function () {
 
 	ctx.fillStyle="rgba(0,0,0,0.01)";
 	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 195)/2,300,150);
@@ -431,21 +456,22 @@ var renderGameEnd = function() {
 	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Score: " + monstersCaught, canvas.width/2 - 35, canvas.height/2 - 50);
-	ctx.fillText("Level: " + level, canvas.width/2 - 35, canvas.height/2 - 30);
+	ctx.fillText("Score: " + monstersCaught, canvas.width/2 - 25, canvas.height/2 - 45);
+	ctx.fillText("Level: " + level, canvas.width/2 - 25, canvas.height/2 - 25);
 	
-	ctx.fillStyle = "#000000";
-	ctx.font = "16px Helvetica";
+	ctx.fillStyle = "#FF0000";
+	ctx.font = "italic 16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Click to retry", canvas.width/2 - 40, canvas.height/2);
+	ctx.fillText("Click to retry", canvas.width/2 - 45, canvas.height/2 + 20);
 	
 	gameOver = true;
+	cleanIntervals();
 	
 };
 
-//Render the game over screen
-var renderStartScreen = function() {
+//Render the game start screen
+var renderStartScreen = function () {
 
 	ctx.fillStyle="rgba(0,0,0,0.01)";
 	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 295)/2,300,250);
@@ -467,7 +493,7 @@ var renderStartScreen = function() {
 	
 	ctx.fillText("Gather gold; dodge death.", canvas.width/2 - 85, canvas.height/2 - 40);
 	ctx.fillText("Move fast, ding more.", canvas.width/2 - 70, canvas.height/2 - 15);
-	ctx.fillText("Level up to awesome.", canvas.width/2 - 75, canvas.height/2 + 10);
+	ctx.fillText("Level up to awesome.", canvas.width/2 - 70, canvas.height/2 + 10);
 	
 	ctx.fillStyle = "#FF0000";
 	ctx.font = "italic 16px Helvetica";
@@ -475,6 +501,31 @@ var renderStartScreen = function() {
 	ctx.fillText("Click to start", canvas.width/2 - 40, canvas.height/2 + 60);
 	
 };
+
+//Render the character select  screen
+var renderSelectScreen = function() {
+
+	ctx.fillStyle="rgba(0,0,0,0.01)";
+	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 295)/2,300,250);
+	
+	ctx.fillStyle="#DADADA";
+	ctx.fillRect((canvas.width - 300)/2,(canvas.height - 300)/2,300,250);
+
+	ctx.fillStyle = "#000000";
+	ctx.font = "26px Helvetica";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.fillText("Choose Your Toon", canvas.width/2 - 95, canvas.height/2 - 120);
+	
+	
+};
+
+//Clean up all the timers and constantly-running re-renderers
+var cleanIntervals = function () {
+	clearInterval(fadeInt);
+	clearInterval(fadeBox);
+	clearInterval(gameId);
+}
 
 // Render the game
 var render = function () {
