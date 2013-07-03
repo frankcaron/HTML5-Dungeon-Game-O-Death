@@ -89,7 +89,9 @@ var baseXP = 25;
 var xp = 0;
 var level = 0;
 var xpTill = level*4 + 100;
+var xpToLevel = level*4 + 100;
 var xpAwarded = 0;
+var xpBarWidth = 0;
 
 //Game
 var gameId;
@@ -124,6 +126,7 @@ var initGame = function() {
 	level = 0;
 	xpTill = level*4 + 100;
 	xpAwarded = 0;
+	xpBarWidth = 0;
 
 	//Game
 	gameOver = false;
@@ -261,6 +264,8 @@ var levelUp = function() {
 	if (xpTill <= 0) {
 		level += 1;
 		xpTill = level*2 + 100;
+		xpToLevel = level*2 + 100;
+		xp = 0;
 	}
 };
 
@@ -271,6 +276,7 @@ var awardXP = function() {
 	if (xpAwarded < 0) { xpAwarded = 1; }
 	
 	renderXP();	
+	xp += xpAwarded;
 	xpTill -= xpAwarded;
 	lastCatch = thisCatch;
 	
@@ -296,19 +302,53 @@ var update = function (modifier) {
  * 
  * ============================================== */
  
- var renderXPBar = function () {
- 	
- } 
-//Render the UI
-var renderUI = function () {
-	ctx.fillStyle = "#000000";
-	ctx.font = "16px Helvetica";
+//Render the XP bar
+var renderXPBar = function () {
+
+	xpBarWidth = xp / xpToLevel;
+	xpBarWidth = Math.floor(xpBarWidth * (canvas.width - 40));
+	
+	if (xpBarWidth > canvas.width - 40) { xpBarWidth = canvas.width - 40; }
+	
+	ctx.fillStyle="rgba(0,255,0,0.2)";
+	ctx.fillRect(20, canvas.height - 20, xpBarWidth, 10);
+	
+	ctx.fillStyle="rgba(0,255,0,1)";
+	ctx.font = "12px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Score: " + monstersCaught, 10, 10);
-	ctx.fillText("Timer: " + Math.floor(timer), 130, 10);
-	ctx.fillText("Level: " + level, 250, 10);
-	ctx.fillText("Next: " + xpTill, 380, 10);
+	ctx.fillText("" + level, 10, canvas.height - 22);
+ 	
+};
+
+//Render the combo counter
+var renderComboCounter = function () {
+	ctx.fillStyle="rgba(0,255,0,0.2)";
+	ctx.fillRect(20, 20, canvas.width - 40, 10);
+};
+
+//Render the UI
+var renderUI = function () {
+	
+	//Timer
+	ctx.fillStyle="rgba(0,255,0,1)";
+	ctx.font = "12px Helvetica";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.fillText("" + Math.floor(timer), canvas.width/2 - 10, 40);
+	
+	//Combo
+	renderComboCounter();
+
+	//XP
+	renderXPBar();
+	
+	//Score
+	ctx.fillStyle="rgba(0,255,0,1)";
+	ctx.font = "12px Helvetica";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.fillText("" + monstersCaught, canvas.width - 20, canvas.height - 22);
 };
 
 //Render the game actors
