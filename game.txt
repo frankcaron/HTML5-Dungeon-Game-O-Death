@@ -1,0 +1,27 @@
+Roadmap
+============================
+
+* Convert XP fields into XP bar
+* Level up heals you, spawns more boxes
+* Create a "Ding" animation
+* Create a fade between draws after collect
+* Create a burn-down timer and integrate it as a combo meter
+* Leaderboard
+* Classes
+  * Warrior (5 HP)
+  	* Berserker (2 HP, regain HP as long as combo maxed)
+  	* Paladin (3 HP, double-click to heal 1 HP at cost of 0.5 combo counter)
+  * Wizard (double-click to clear obstacles but reset combo counter, 2 HP)
+  	* Necromancer (1 HP, resurrect on death if combo counter maxed)
+  	* Tempomancer (double-click to freeze combo counter but lose 1 HP, 3 HP)
+  * Cleric (3 HP, double-click to heal HP but reset combo counter)
+  	* Druid (2 HP, transform shape by double-click; different move speeds)
+  	* Blood Mage (2 HP, max combo counter by dying) 
+  * Thief (Double points for gold, 1 HP)
+	* Assassin (Double points, Randomly dodge death 40%, 1 HP)
+	* Swashbuckler (Triple points for gold, 1 HP)
+
+
+Other Notes
+============================
+Realms of The Rounded Rectangle
