@@ -24,6 +24,7 @@
 // Create the canvas
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
+var ctx_alt = canvas.getContext("2d");
 canvas.width = 512;
 canvas.height = 480;
 canvas.style.position = "absolute";
@@ -70,6 +71,7 @@ var classType = 0;
 var monster = {};
 var monstersCaught = 0;
 var obst = {};
+var special = {};
 
 // Handle keyboard controls
 var keysDown = {};
@@ -108,6 +110,11 @@ var renderSpecialFlag = false;
 var renderXPFlag = false;
 var special_alpha = 1.0;
 var special_noclass_circleMaxRadius = 32;
+var renderObstakillFlag = false;
+var obstakill_alpha = 1.0;
+var obstakill_circleMaxRadius = 32;
+var obsTempX;
+var obsTempY;
 
 //Reset function
 var initGame = function () {
@@ -118,7 +125,8 @@ var initGame = function () {
 	monster = {};
 	monstersCaught = 0;
 	obst = {};
-
+	special = {};
+	
 	// Handle keyboard controls
 	keysDown = {};
 
@@ -153,6 +161,9 @@ var initGame = function () {
 	renderXPFlag = false;
 	special_alpha = 1.0;
 	special_noclass_circleMaxRadius = 32;
+	renderObstakillFlag = false;
+	obstakill_alpha = 1.0;
+	obstakill_circleMaxRadius = 32;
 	
 	//Start Game
 	reset();
@@ -281,6 +292,18 @@ var detectPlayerHit = function () {
 	} else { blocked = false; }
 };
 
+//Hit Detection - Special move and obstacle
+var detectSpecialHit = function () {
+	//Determine if there is overlap between the special and an object
+	//Object has 32 pixel width/height
+	//Overlap between sphere will be its current
+	var distanceFromSpecialToObst = (obst.x - special.x)*(obst.x - special.x) + (obst.y - special.y)*(obst.y - special.y);
+	distanceFromSpecialToObst = Math.sqrt(distanceFromSpecialToObst);
+	if (special_noclass_circleMaxRadius >= distanceFromSpecialToObst) { 
+		killObstacle();
+	} 
+};
+
 //Process the level up
 var levelUp = function () {
 	if (xpTill <= 0) {
@@ -318,6 +341,20 @@ var performSpecial = function () {
   	renderSpecialFlag = true;
 }
 
+//Remove the obstacle from the playboard
+var killObstacle = function () {
+	//Capture current position
+	obsTempX = obst.x;
+	obsTempY = obst.y;
+	
+	//Kill current obst
+	obst.x = 9000;
+	obst.y = 9000;
+	
+	//Render
+	renderObstakillFlag = true;
+}
+
 // Update game objects
 var update = function (modifier) {
 	// Hit Detection
@@ -326,7 +363,10 @@ var update = function (modifier) {
 			monstersCaught += 1;	
 			awardXP();
 			reset();
-		} else { detectPlayerHit(); }
+		} else { 
+			detectSpecialHit();
+			detectPlayerHit(); 
+		}
 	}
 };
 
@@ -344,6 +384,27 @@ var renderClear = function() {
 	ctx.fillRect(0,0,canvas.width,canvas.height);
 }
  
+//Render kill obstacle
+var renderObstaKill = function () {
+	
+	//Kill special
+	killSpecialRender();
+	
+	//Draw Explosion
+	ctx.beginPath();
+	ctx.arc(obsTempX + 16, obsTempY + 16, obstakill_circleMaxRadius, 0, 2 * Math.PI, false);
+	ctx.lineWidth = 5;
+	ctx.strokeStyle = "rgba(97, 97, 97, " + obstakill_alpha + ")";
+	ctx.stroke();
+	obstakill_circleMaxRadius = obstakill_circleMaxRadius + 5;
+	obstakill_alpha = obstakill_alpha - 0.05 ; // decrease opacity (fade out)
+	if (obstakill_alpha < 0) {
+		renderObstakillFlag = false;
+		obstakill_alpha = 1.0;
+		obstakill_circleMaxRadius = 32;
+	}
+}
+ 
 //Render \ special move
 var renderSpecial = function () {
 	switch(classType)
@@ -358,19 +419,37 @@ var renderSpecial = function () {
   	}
 };
 
+//Kills a special in mid-render if a mob dies
+var killSpecialRender = function () {
+	renderSpecialFlag = false;
+    special_alpha = 1.0;
+    special_noclass_circleMaxRadius = 32;
+    special = {};
+}
+
 //Render no class special move
+//Outward pulsing circle, player as blast radius
 var renderSpecial_NoClass = function() {
+		
+		//Update stats
+		special.x = hero.x;
+		special.y = hero.y;
+		special.width = 5;
+		special.radius = special_noclass_circleMaxRadius;
+
+		//Draw the circle
 	    ctx.beginPath();
       	ctx.arc(hero.x + 16, hero.y + 16, special_noclass_circleMaxRadius, 0, 2 * Math.PI, false);
       	ctx.lineWidth = 5;
       	ctx.strokeStyle = "rgba(255, 0, 0, " + special_alpha + ")";
       	ctx.stroke();
-    	special_noclass_circleMaxRadius = special_noclass_circleMaxRadius + 5;
+    	special_noclass_circleMaxRadius = special_noclass_circleMaxRadius + 10;
     	special_alpha = special_alpha - 0.10 ; // decrease opacity (fade out)
         if (special_alpha < 0) {
             renderSpecialFlag = false;
             special_alpha = 1.0;
             special_noclass_circleMaxRadius = 32;
+            special = {};
         }
 }; 
  
@@ -503,7 +582,7 @@ var renderStartScreen = function () {
 	ctx.textBaseline = "top";
 	ctx.fillText("Gather gold; dodge death.", canvas.width/2 - 85, canvas.height/2 - 40);
 	ctx.fillText("Move fast, ding more.", canvas.width/2 - 70, canvas.height/2 - 15);
-	ctx.fillText("Level up to awesome.", canvas.width/2 - 70, canvas.height/2 + 10);
+	ctx.fillText("Click to kill.", canvas.width/2 - 30, canvas.height/2 + 10);
 	
 	ctx.fillStyle = "#FF0000";
 	ctx.font = "italic 16px Helvetica";
@@ -537,6 +616,9 @@ var renderEffects = function () {
 	}
 	if (renderXPFlag) {
 		renderXP();
+	}
+	if (renderObstakillFlag) {
+		renderObstaKill();
 	}
 };
 
