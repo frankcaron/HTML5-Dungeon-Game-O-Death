@@ -209,7 +209,6 @@ addEventListener('mousedown', function (e) {
  * Describes the main game event and subsequent logic
  * 
  * ============================================== */
- 
 
 //Reset the hero if necessary
 var resetHeroIfNecessary = function () {
@@ -229,13 +228,10 @@ var resetMonster = function () {
 
 //Reset the obstacle
 var resetObstacle = function () {
-
 	placedObst = false;
-	
 	while (!placedObst) {
 		obst.x = 32 + (Math.random() * (canvas.width - 64));
 		obst.y = 32 + (Math.random() * (canvas.height - 64));
-	
 		if (
 			hero.x <= (obst.x + 32)
 			&& obst.x <= (hero.x + 32)
@@ -300,6 +296,7 @@ var levelUp = function () {
 
 //Award XP
 var awardXP = function () {
+	//Compute XP based on timer
 	thisCatch = Math.floor(timer);
 	xpAwarded = Math.floor(xp + (((lastCatch - thisCatch)*10 + baseXP) * (level/2 + 1)));
 	if (xpAwarded < 0) { xpAwarded = 1; }
@@ -312,7 +309,7 @@ var awardXP = function () {
 	//Render XP
 	renderXPFlag = true;
 	
-	//Process level up math
+	//Perform level up
 	levelUp();
 };
 
@@ -395,21 +392,16 @@ var renderLevelUpFlash = function () {
 
 //Render the XP bar
 var renderXPBar = function () {
-
 	xpBarWidth = xp / xpToLevel;
 	xpBarWidth = Math.floor(xpBarWidth * (canvas.width - 40));
-	
 	if (xpBarWidth > canvas.width - 40) { xpBarWidth = canvas.width - 40; }
-	
 	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.fillRect(20, canvas.height - 20, xpBarWidth, 10);
-	
 	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.font = "12px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
 	ctx.fillText("" + level, 10, canvas.height - 22);
- 	
 };
 
 //Render the combo counter
@@ -420,7 +412,6 @@ var renderComboCounter = function () {
 
 //Render the UI
 var renderUI = function () {
-	
 	//Timer
 	ctx.fillStyle="rgba(161,230,173,0.8)";
 	ctx.font = "12px Helvetica";
@@ -444,21 +435,10 @@ var renderUI = function () {
 
 //Render the game actors
 var renderActors = function () {
-	if (bgReady) {
-		ctx.drawImage(bgImage, 0, 0);
-	}
-
-	if (heroReady) {
-		ctx.drawImage(heroImage, hero.x, hero.y);
-	}
-
-	if (monsterReady) {
-		ctx.drawImage(monsterImage, monster.x, monster.y);
-	}
-	
-	if (obstacleReady) {
-		ctx.drawImage(obstacleImage, obst.x, obst.y);
-	}
+	if (bgReady) { ctx.drawImage(bgImage, 0, 0); }
+	if (heroReady) { ctx.drawImage(heroImage, hero.x, hero.y); }
+	if (monsterReady) { ctx.drawImage(monsterImage, monster.x, monster.y); }
+	if (obstacleReady) { ctx.drawImage(obstacleImage, obst.x, obst.y); }
 };
 
 //Render the XP indicator
@@ -501,18 +481,15 @@ var renderGameEnd = function () {
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
 	ctx.fillText("Click to retry", canvas.width/2 - 45, canvas.height/2 + 20);
-	
 };
 
 //Render the game start screen
 var renderStartScreen = function () {
-
 	ctx.fillStyle="rgba(0,0,0,0.01)";
 	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 295)/2,300,250);
-	
 	ctx.fillStyle="#DADADA";
+	
 	ctx.fillRect((canvas.width - 300)/2,(canvas.height - 300)/2,300,250);
-
 	ctx.fillStyle = "#000000";
 	ctx.font = "26px Helvetica";
 	ctx.textAlign = "left";
@@ -524,14 +501,12 @@ var renderStartScreen = function () {
 	ctx.font = "16px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	
 	ctx.fillText("Gather gold; dodge death.", canvas.width/2 - 85, canvas.height/2 - 40);
 	ctx.fillText("Move fast, ding more.", canvas.width/2 - 70, canvas.height/2 - 15);
 	ctx.fillText("Level up to awesome.", canvas.width/2 - 70, canvas.height/2 + 10);
 	
 	ctx.fillStyle = "#FF0000";
 	ctx.font = "italic 16px Helvetica";
-	
 	ctx.fillText("Click to start", canvas.width/2 - 40, canvas.height/2 + 60);
 	
 };
@@ -554,7 +529,6 @@ var renderSelectScreen = function() {
 
 //Render the game effects if necessary
 var renderEffects = function () {
-
 	if (renderDingFlag) {
 		renderLevelUpFlash();
 	}
@@ -564,8 +538,8 @@ var renderEffects = function () {
 	if (renderXPFlag) {
 		renderXP();
 	}
-	
-}
+};
+
 //Render menus
 var renderMenus = function() {
 	if (!gameStarted) {
@@ -574,13 +548,15 @@ var renderMenus = function() {
 	if (gameOver) {
 		renderGameEnd();
 	}
-}
+};
 
 // Render the game
 var render = function () {
+	//If the game hasn't started or is over, clear the screen and render the menus...
 	if (!gameStarted || gameOver) {
 		renderClear();
 		renderMenus();
+	//Otherwise, render the game
 	} else {
 		renderActors();
 		renderUI();
