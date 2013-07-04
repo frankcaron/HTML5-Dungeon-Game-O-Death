@@ -93,12 +93,21 @@ var xpTill = level*4 + 100;
 var xpToLevel = level*4 + 100;
 var xpAwarded = 0;
 var xpBarWidth = 0;
+var xp_alpha = 1.0;
+var ding_alpha = 1.0;
 
 //Game
 var gameId;
 var gameOver = false;
 var gameStarted = false;
 var characterSelected = false;
+
+//Effects
+var renderDingFlag = false;
+var renderSpecialFlag = false;
+var renderXPFlag = false;
+var special_alpha = 1.0;
+var special_noclass_circleMaxRadius = 32;
 
 //Reset function
 var initGame = function () {
@@ -130,16 +139,23 @@ var initGame = function () {
 	xpTill = level*4 + 100;
 	xpAwarded = 0;
 	xpBarWidth = 0;
+	xp_alpha = 1.0;
+	ding_alpha = 1.0;
 
 	//Game
 	gameOver = false;
 	gameStarted = false;
 	characterSelected = false;
 	
+	//Effects
+	renderDingFlag = false;
+	renderSpecialFlag = false;
+	renderXPFlag = false;
+	special_alpha = 1.0;
+	special_noclass_circleMaxRadius = 32;
+	
 	//Start Game
 	reset();
-	then = Date.now();
-	gameId = setInterval(main, 1); // Execute as fast as possible
 };
 
 /* ==============================================
@@ -152,9 +168,6 @@ var initGame = function () {
 
 // Track The Mouse
 addEventListener('mousemove', function(e) {
-
-	//Safari Fix
-	e.preventDefault();
 	
     var mousePos = getMousePos(canvas, e);
         
@@ -162,10 +175,7 @@ addEventListener('mousemove', function(e) {
        	//Move the hero to match the mouse
 		hero.x = mousePos.x - heroImage.width/2;
 		hero.y = mousePos.y - heroImage.height/2;
-	} else {
-		//End game
-		renderGameEnd();
-	}
+	} 
 }, false);
       
 //Get the mouse's current position
@@ -179,9 +189,6 @@ function getMousePos (canvas, e) {
 
 //Track mousedown on gameover
 addEventListener('mousedown', function (e) {
-	//Safari Fix
-	e.preventDefault();
-	
 	//If you click before the game has started, start the game.
 	if (!gameStarted && !gameOver) { 
 		gameStarted = true; 
@@ -189,7 +196,6 @@ addEventListener('mousedown', function (e) {
 	//If you click while the game is going, do your special move
 		performSpecial();
 	}
-	
 	//If you click after a game over, restart the game.
 	if (gameOver) {  
 		initGame();
@@ -273,7 +279,10 @@ var detectPlayerHit = function () {
 		&& obst.x <= (hero.x + 32)
 		&& hero.y <= (obst.y + 32)
 		&& obst.y <= (hero.y + 32)
-	) { blocked = true; } else { blocked = false; }
+	) { 
+		blocked = true; 
+		gameOver = true; 
+	} else { blocked = false; }
 };
 
 //Process the level up
@@ -283,7 +292,9 @@ var levelUp = function () {
 		xpTill = level*2 + 100;
 		xpToLevel = level*2 + 100;
 		xp = 0;
-		renderLevelUpFlash();
+		
+		//Render Ding	
+		renderDingFlag = true;
 	}
 };
 
@@ -292,11 +303,14 @@ var awardXP = function () {
 	thisCatch = Math.floor(timer);
 	xpAwarded = Math.floor(xp + (((lastCatch - thisCatch)*10 + baseXP) * (level/2 + 1)));
 	if (xpAwarded < 0) { xpAwarded = 1; }
-	
-	renderXP();	
+		
+	//Increment XP	
 	xp += xpAwarded;
 	xpTill -= xpAwarded;
 	lastCatch = thisCatch;
+	
+	//Render XP
+	renderXPFlag = true;
 	
 	//Process level up math
 	levelUp();
@@ -304,25 +318,19 @@ var awardXP = function () {
 
 //Perform a special move
 var performSpecial = function () {
-	switch(classType)
-	{
-		case 1:
-  			//Class 1
-  			break;
-		default:
-  			//No class
-  			renderExplosion();
-	}
+  	renderSpecialFlag = true;
 }
 
 // Update game objects
 var update = function (modifier) {
 	// Hit Detection
-	if ( detectMonsterCatch() ) {
-		monstersCaught += 1;	
-		awardXP();
-		reset();
-	} else { detectPlayerHit(); }
+	if (gameStarted && !gameOver) {
+		if ( detectMonsterCatch() ) {
+			monstersCaught += 1;	
+			awardXP();
+			reset();
+		} else { detectPlayerHit(); }
+	}
 };
 
 /* ==============================================
@@ -333,47 +341,56 @@ var update = function (modifier) {
  * 
  * ============================================== */
  
-//Render explosion special move
-var renderExplosion = function () {
-	
-	//Temp vars
-	var alpha = 1.0;   // full opacity
-	var circleMaxRadius = 32;
-	
-    fadeCircle = setInterval(function () {
+ //Clear the screen
+var renderClear = function() {
+	ctx.fillStyle="#FFFFFF";
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+ 
+//Render \ special move
+var renderSpecial = function () {
+	switch(classType)
+	{
+		case 1:
+  			//Class 1
+  			alert("lol, you idiot");
+  			break;
+		default:
+  			renderSpecial_NoClass();
+  			break;
+  	}
+};
+
+//Render no class special move
+var renderSpecial_NoClass = function() {
 	    ctx.beginPath();
-      	ctx.arc(hero.x + 16, hero.y + 16, circleMaxRadius, 0, 2 * Math.PI, false);
+      	ctx.arc(hero.x + 16, hero.y + 16, special_noclass_circleMaxRadius, 0, 2 * Math.PI, false);
       	ctx.lineWidth = 5;
-      	ctx.strokeStyle = "rgba(255, 0, 0, " + alpha + ")";
+      	ctx.strokeStyle = "rgba(255, 0, 0, " + special_alpha + ")";
       	ctx.stroke();
-    	circleMaxRadius = circleMaxRadius + 5;
-    	alpha = alpha - 0.05 ; // decrease opacity (fade out)
-        if (alpha < 0) {
-            clearInterval(fadeCircle);
+    	special_noclass_circleMaxRadius = special_noclass_circleMaxRadius + 5;
+    	special_alpha = special_alpha - 0.10 ; // decrease opacity (fade out)
+        if (special_alpha < 0) {
+            renderSpecialFlag = false;
+            special_alpha = 1.0;
+            special_noclass_circleMaxRadius = 32;
         }
-    }, 1); 
 }; 
  
 //Render level up flash
 var renderLevelUpFlash = function () {
-	var alpha = 1.0,   // full opacity
-    fadeBox = setInterval(function () {
-    	//White Flash
-        ctx.fillStyle = "rgba(255, 255, 255, " + alpha + ")";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
-        //Text
-        ctx.fillStyle="rgba(0,0,0, " + alpha + ")";
-		ctx.font = "22px Helvetica";
-		ctx.textAlign = "left";
-		ctx.textBaseline = "top";
-		ctx.fillText("DING!", canvas.width/2 - 25, canvas.height/2);
-    
-        alpha = alpha - 0.01; // decrease opacity (fade out)
-        if (alpha < 0) {
-            clearInterval(fadeBox);
-        }
-    }, 1); 
+    ctx.fillStyle = "rgba(255, 255, 255, " + ding_alpha + ")";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle="rgba(0,0,0, " + ding_alpha + ")";
+	ctx.font = "22px Helvetica";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.fillText("DING!", canvas.width/2 - 25, canvas.height/2);
+    ding_alpha = ding_alpha - 0.05; // decrease opacity (fade out)
+    if (ding_alpha < 0) {
+    	renderDingFlag = false;
+    	ding_alpha = 1.0;
+    } 
 };
 
 //Render the XP bar
@@ -446,23 +463,20 @@ var renderActors = function () {
 
 //Render the XP indicator
 var renderXP = function () {	
-	var alpha = 1.0,   // full opacity
-    fadeInt = setInterval(function () {
-        ctx.fillStyle = "rgba(255, 0, 0, " + alpha + ")";
-        ctx.font = "12px Helvetica";
-		ctx.textAlign = "left";
-		ctx.textBaseline = "top";
-        ctx.fillText("XP " + xpAwarded, hero.x + 4, hero.y + 40);
-        alpha = alpha - 0.01; // decrease opacity (fade out)
-        if (alpha < 0) {
-            clearInterval(fadeInt);
-        }
-    }, 1); 
+	ctx.fillStyle = "rgba(255, 0, 0, " + xp_alpha + ")";
+	ctx.font = "12px Helvetica";
+	ctx.textAlign = "left";
+	ctx.textBaseline = "top";
+	ctx.fillText("XP " + xpAwarded, hero.x + 4, hero.y + 40);
+	xp_alpha = xp_alpha - 0.05; // decrease opacity (fade out)
+	if (xp_alpha < 0) {
+		renderXPFlag = false;
+		xp_alpha = 1.0;
+	}
 };
 
 //Render the game over screen
 var renderGameEnd = function () {
-
 	ctx.fillStyle="rgba(0,0,0,0.01)";
 	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 195)/2,300,150);
 	
@@ -487,9 +501,6 @@ var renderGameEnd = function () {
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
 	ctx.fillText("Click to retry", canvas.width/2 - 45, canvas.height/2 + 20);
-	
-	gameOver = true;
-	cleanIntervals();
 	
 };
 
@@ -527,7 +538,6 @@ var renderStartScreen = function () {
 
 //Render the character select  screen
 var renderSelectScreen = function() {
-
 	ctx.fillStyle="rgba(0,0,0,0.01)";
 	ctx.fillRect((canvas.width - 295)/2,(canvas.height - 295)/2,300,250);
 	
@@ -540,21 +550,84 @@ var renderSelectScreen = function() {
 	ctx.textBaseline = "top";
 	ctx.fillText("Choose Your Toon", canvas.width/2 - 95, canvas.height/2 - 120);
 	
-	
 };
 
-//Clean up all the timers and constantly-running re-renderers
-var cleanIntervals = function () {
-	clearInterval(fadeInt);
-	clearInterval(fadeBox);
-	clearInterval(gameId);
-	clearInterval(fadeCircle);
+//Render the game effects if necessary
+var renderEffects = function () {
+
+	if (renderDingFlag) {
+		renderLevelUpFlash();
+	}
+	if (renderSpecialFlag) {
+		renderSpecial();
+	}
+	if (renderXPFlag) {
+		renderXP();
+	}
+	
+}
+//Render menus
+var renderMenus = function() {
+	if (!gameStarted) {
+		renderStartScreen();
+	}
+	if (gameOver) {
+		renderGameEnd();
+	}
 }
 
 // Render the game
 var render = function () {
-	renderActors();
-	renderUI();
+	if (!gameStarted || gameOver) {
+		renderClear();
+		renderMenus();
+	} else {
+		renderActors();
+		renderUI();
+		renderEffects();
+	}
+};
+
+/* ==============================================
+ * 
+ * GAME AND RENDER LOOPS
+ * 
+ * Describes the main game event and subsequent logic
+ * 
+ * ============================================== */
+
+//The main game loop
+var mainloop = function() {
+
+	//Capture date to throttle the game logic updates
+	var now = Date.now();
+	var delta = now - then;
+	
+	//Process the game logic
+	update(delta / 1000);
+	
+	//Update the in-game timer
+	timer = timer + 0.01;
+	
+	//Render the visuals
+	render();
+	
+	//Update the time for game logic throttling
+	then = now;
+
+};
+
+//Animation functions
+var animFrame = window.requestAnimationFrame ||
+		window.webkitRequestAnimationFrame ||
+		window.mozRequestAnimationFrame    ||
+		window.oRequestAnimationFrame      ||
+		window.msRequestAnimationFrame     ||
+		null ;
+
+var recursiveAnim = function() {
+	mainloop();
+	animFrame( recursiveAnim );
 };
 
 /* ==============================================
@@ -565,25 +638,8 @@ var render = function () {
  * 
  * ============================================== */
 
-// The main game loop
-var main = function () {
-	if (gameStarted) {
-		var now = Date.now();
-		var delta = now - then;
-
-		update(delta / 1000);
-		timer = timer + 0.01;
-		render();
-
-		then = now;
-	
-		if (gameOver) { clearInterval(gameId); }
-	} else {
-		renderStartScreen();
-	}
-};
-
-//First Run
+//Start the main loop and initialize the game vars
+animFrame( recursiveAnim );
 initGame();
 
 
