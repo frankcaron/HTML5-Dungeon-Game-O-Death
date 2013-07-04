@@ -13,8 +13,14 @@ Features:
 
 Done
 ----------------------------
+* Create animationFrame render engine
+* Create basic game framework
+* Create XP system
 * Convert XP fields into XP bar
 * Create a "Ding" animation
+* Create a special move and subsequent animation
+* Create a class section mechanic
+* Create menus, icons
 * Create a fade between draws after collect
 
 To Do
@@ -29,9 +35,8 @@ To Do
 
 Knowledgebase
 ----------------------------
-* Classes
   * Warrior (5 HP)
-  	* Berserker (2 HP, regain HP as long as combo maxed)
+    * Berserker (2 HP, regain HP as long as combo maxed)
   	* Paladin (3 HP, double-click to heal 1 HP at cost of 0.5 combo counter)
   * Wizard (double-click to clear obstacles but reset combo counter, 2 HP)
   	* Necromancer (1 HP, resurrect on death if combo counter maxed)
