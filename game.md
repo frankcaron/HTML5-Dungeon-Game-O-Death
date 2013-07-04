@@ -33,7 +33,7 @@ To Do
 * Introduce concept of HP
 * Create a specialization selection
 
-Knowledgebase
+Classes
 ----------------------------
   * Warrior (5 HP)
     * Berserker (2 HP, regain HP as long as combo maxed)
@@ -47,5 +47,4 @@ Knowledgebase
   * Thief (Double points for gold, 1 HP)
 	* Assassin (Double points, Randomly dodge death 40%, 1 HP)
 	* Swashbuckler (Triple points for gold, 1 HP)
-* Leaderboard
 
