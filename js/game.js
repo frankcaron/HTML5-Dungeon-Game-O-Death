@@ -38,11 +38,16 @@ var bgImage = new Image();
 bgImage.onload = function () { bgReady = true; };
 bgImage.src = "images/background.png";
 
-// Hero image
-var heroReady = false;
-var heroImage = new Image();
-heroImage.onload = function () { heroReady = true; };
-heroImage.src = "images/hero.png";
+// Hero images
+var hero1Ready = false;
+var hero2Ready = false;
+var hero1Image = new Image();
+var hero2Image = new Image();
+hero1Image.onload = function () { hero1Ready = true; };
+hero2Image.onload = function () { hero2Ready = true; };
+hero1Image.src = "images/hero_1.png";
+hero2Image.src = "images/hero_2.png";
+
 
 // Monster image
 var monsterReady = false;
@@ -67,7 +72,7 @@ obstacleImage.src = "images/obstacle.png";
 var hero = {
 	speed: 256 // movement in pixels per second
 };
-var classType = 0;
+var classType = 1;
 var monster = {};
 var monstersCaught = 0;
 var obst = {};
@@ -109,7 +114,7 @@ var renderDingFlag = false;
 var renderSpecialFlag = false;
 var renderXPFlag = false;
 var special_alpha = 1.0;
-var special_noclass_circleMaxRadius = 32;
+var special_warrior_circleMaxRadius = 32;
 var renderObstakillFlag = false;
 var obstakill_alpha = 1.0;
 var obstakill_circleMaxRadius = 32;
@@ -121,7 +126,7 @@ var initGame = function () {
 	hero = {
 		speed: 256 // movement in pixels per second
 	};
-	classType = 0;
+	classType = 1;
 	monster = {};
 	monstersCaught = 0;
 	obst = {};
@@ -160,7 +165,7 @@ var initGame = function () {
 	renderSpecialFlag = false;
 	renderXPFlag = false;
 	special_alpha = 1.0;
-	special_noclass_circleMaxRadius = 32;
+	special_warrior_circleMaxRadius = 32;
 	renderObstakillFlag = false;
 	obstakill_alpha = 1.0;
 	obstakill_circleMaxRadius = 32;
@@ -184,8 +189,17 @@ addEventListener('mousemove', function(e) {
         
     if (!blocked) {
        	//Move the hero to match the mouse
-		hero.x = mousePos.x - heroImage.width/2;
-		hero.y = mousePos.y - heroImage.height/2;
+       	switch(classType)
+		{
+			case 1:
+				hero.x = mousePos.x - hero1Image.width/2;
+				hero.y = mousePos.y - hero1Image.height/2;
+				break;
+			case 2:
+				hero.x = mousePos.x - hero2Image.width/2;
+				hero.y = mousePos.y - hero2Image.height/2;
+				break;
+		}
 	} 
 }, false);
       
@@ -201,18 +215,38 @@ function getMousePos (canvas, e) {
 //Track mousedown on gameover
 addEventListener('mousedown', function (e) {
 	//If you click before the game has started, start the game.
-	if (!gameStarted && !gameOver) { 
+	if (!gameStarted && !characterSelected && !gameOver) { 
 		gameStarted = true; 
+	} else if (gameStarted && !characterSelected && !gameOver) {
+		detectClickedToon(e);
 	} else if (!gameOver) {
 	//If you click while the game is going, do your special move
 		performSpecial();
-	}
+	} 
+
 	//If you click after a game over, restart the game.
 	if (gameOver) {  
 		initGame();
 	}
 }, false);
 
+//Detect clicked toon for character select screen
+var detectClickedToon = function(e) {
+	var mousePosTemp = getMousePos(canvas, e);
+	if (
+		mousePosTemp.y <= (243)
+		&& mousePosTemp.y >= (192)
+	) {
+		classType = 1;
+		characterSelected = true;
+	} else if (	
+		mousePosTemp.y <= (281)
+		&& mousePosTemp.y >= (254)
+	) {
+		classType = 2;
+		characterSelected = true;
+	}
+};
 /* ==============================================
  * 
  * GAME LOGIC
@@ -299,7 +333,7 @@ var detectSpecialHit = function () {
 	//Overlap between sphere will be its current
 	var distanceFromSpecialToObst = (obst.x - special.x)*(obst.x - special.x) + (obst.y - special.y)*(obst.y - special.y);
 	distanceFromSpecialToObst = Math.sqrt(distanceFromSpecialToObst);
-	if (special_noclass_circleMaxRadius >= distanceFromSpecialToObst) { 
+	if (special_warrior_circleMaxRadius >= distanceFromSpecialToObst) { 
 		killObstacle();
 	} 
 };
@@ -358,7 +392,7 @@ var killObstacle = function () {
 // Update game objects
 var update = function (modifier) {
 	// Hit Detection
-	if (gameStarted && !gameOver) {
+	if (gameStarted && characterSelected && !gameOver) {
 		if ( detectMonsterCatch() ) {
 			monstersCaught += 1;	
 			awardXP();
@@ -411,10 +445,10 @@ var renderSpecial = function () {
 	{
 		case 1:
   			//Class 1
-  			alert("lol, you idiot");
+  			renderSpecial_Warrior();
   			break;
-		default:
-  			renderSpecial_NoClass();
+		case 2:
+  			//Class 2
   			break;
   	}
 };
@@ -423,32 +457,32 @@ var renderSpecial = function () {
 var killSpecialRender = function () {
 	renderSpecialFlag = false;
     special_alpha = 1.0;
-    special_noclass_circleMaxRadius = 32;
+    special_warrior_circleMaxRadius = 32;
     special = {};
 }
 
 //Render no class special move
 //Outward pulsing circle, player as blast radius
-var renderSpecial_NoClass = function() {
+var renderSpecial_Warrior = function() {
 		
 		//Update stats
 		special.x = hero.x;
 		special.y = hero.y;
 		special.width = 5;
-		special.radius = special_noclass_circleMaxRadius;
+		special.radius = special_warrior_circleMaxRadius;
 
 		//Draw the circle
 	    ctx.beginPath();
-      	ctx.arc(hero.x + 16, hero.y + 16, special_noclass_circleMaxRadius, 0, 2 * Math.PI, false);
+      	ctx.arc(hero.x + 16, hero.y + 16, special_warrior_circleMaxRadius, 0, 2 * Math.PI, false);
       	ctx.lineWidth = 5;
       	ctx.strokeStyle = "rgba(255, 0, 0, " + special_alpha + ")";
       	ctx.stroke();
-    	special_noclass_circleMaxRadius = special_noclass_circleMaxRadius + 10;
+    	special_warrior_circleMaxRadius = special_warrior_circleMaxRadius + 10;
     	special_alpha = special_alpha - 0.10 ; // decrease opacity (fade out)
         if (special_alpha < 0) {
             renderSpecialFlag = false;
             special_alpha = 1.0;
-            special_noclass_circleMaxRadius = 32;
+            special_warrior_circleMaxRadius = 32;
             special = {};
         }
 }; 
@@ -515,7 +549,19 @@ var renderUI = function () {
 //Render the game actors
 var renderActors = function () {
 	if (bgReady) { ctx.drawImage(bgImage, 0, 0); }
-	if (heroReady) { ctx.drawImage(heroImage, hero.x, hero.y); }
+	if (hero1Ready && hero2Ready) { 
+		switch(classType)
+		{
+			case 1:
+  				//Class 1
+  				ctx.drawImage(hero1Image, hero.x, hero.y);
+  				break;
+  			case 2:
+  				//Class 2
+  				ctx.drawImage(hero2Image, hero.x, hero.y);
+  				break;
+  		}
+	}
 	if (monsterReady) { ctx.drawImage(monsterImage, monster.x, monster.y); }
 	if (obstacleReady) { ctx.drawImage(obstacleImage, obst.x, obst.y); }
 };
@@ -602,7 +648,21 @@ var renderSelectScreen = function() {
 	ctx.font = "26px Helvetica";
 	ctx.textAlign = "left";
 	ctx.textBaseline = "top";
-	ctx.fillText("Choose Your Toon", canvas.width/2 - 95, canvas.height/2 - 120);
+	ctx.fillText("Choose Your Toon", canvas.width/2 - 110, canvas.height/2 - 120);
+	
+	ctx.font = "16px Helvetica";
+	
+	
+	
+	
+	if (hero1Ready) { 
+		ctx.drawImage(hero1Image, canvas.width/2 - 90, canvas.height/2 - 50); 
+		ctx.fillText("Warrior", canvas.width/2 - 40, canvas.height/2 - 40);
+	}
+	if (hero2Ready) { 
+		ctx.drawImage(hero2Image, canvas.width/2 - 90, canvas.height/2 + 10); 
+		ctx.fillText("Mage", canvas.width/2 - 40, canvas.height/2 + 20);
+	}
 	
 };
 
@@ -624,8 +684,11 @@ var renderEffects = function () {
 
 //Render menus
 var renderMenus = function() {
-	if (!gameStarted) {
+	if (!gameStarted && !characterSelected) {
 		renderStartScreen();
+	}
+	if (gameStarted && !characterSelected) {
+		renderSelectScreen();
 	}
 	if (gameOver) {
 		renderGameEnd();
@@ -635,7 +698,7 @@ var renderMenus = function() {
 // Render the game
 var render = function () {
 	//If the game hasn't started or is over, clear the screen and render the menus...
-	if (!gameStarted || gameOver) {
+	if (!gameStarted || !characterSelected || gameOver) {
 		renderClear();
 		renderMenus();
 	//Otherwise, render the game
