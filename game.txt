@@ -1,12 +1,34 @@
-Roadmap
+Realms of The Round Rectangle
 ============================
+_Gather gold; dodge death. Move fast, ding more. Level up to awesome._
 
+A simple time-sensitive rogue-like destined for mobile phones.
+
+Features:
+* Frenetic rogue-like gameplay
+* Procedurally-generated levels make game infinitely replayable
+* Simple controls, hardcore gameplay (in the vein of The Impossible Game)
+* 4 base classes, 2 specializations per, unique ability and play mechanics for each
+* Leaderboards
+
+Done
+----------------------------
 * Convert XP fields into XP bar
-* Level up heals you, spawns more boxes
 * Create a "Ding" animation
 * Create a fade between draws after collect
-* Create a burn-down timer and integrate it as a combo meter
-* Leaderboard
+
+To Do
+----------------------------
+* Combo counter instead of timer (Create a burn-down timer and integrate it as a combo meter)
+* Refine balancing for leveling curve
+* Procedurally generate obstacles in a maze pattern, taken into account player level
+* Level up heals you, spawns more boxes
+* Create a unique move for the wizard
+* Introduce concept of HP
+* Create a specialization selection
+
+Knowledgebase
+----------------------------
 * Classes
   * Warrior (5 HP)
   	* Berserker (2 HP, regain HP as long as combo maxed)
@@ -20,8 +42,5 @@ Roadmap
   * Thief (Double points for gold, 1 HP)
 	* Assassin (Double points, Randomly dodge death 40%, 1 HP)
 	* Swashbuckler (Triple points for gold, 1 HP)
+* Leaderboard
 
-
-Other Notes
-============================
-Realms of The Rounded Rectangle
