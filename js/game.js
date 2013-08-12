@@ -108,6 +108,8 @@ var gameId;
 var gameOver = false;
 var gameStarted = false;
 var characterSelected = false;
+var scoreSent = false;
+var scoreGot = false;
 
 //Effects
 var renderDingFlag = false;
@@ -159,6 +161,8 @@ var initGame = function () {
 	gameOver = false;
 	gameStarted = false;
 	characterSelected = false;
+	scoreSent = false;
+	scoreGot = false;
 	
 	//Effects
 	renderDingFlag = false;
@@ -403,6 +407,94 @@ var update = function (modifier) {
 		}
 	}
 };
+
+//Process Game End
+var processGameEnd = function() {
+	//Send Facebook Score
+	scoreSendFailure = false;
+	if (!scoreSent && !scoreSendFailure) {
+		sendFacebookScore();
+	}
+}
+
+//Get Previous High Score
+var getHighScore = function() {
+	//Flag for score send failure
+	scoreGetFailure = false;
+	
+	if (!scoreGot && !scoreGetFailure) {
+    	oldScores = getFacebookScore();	
+    	console.log(oldScores);
+	}
+	
+}
+
+//Retrieve Score From FB
+var getFacebookScore = function() {
+		//Player ID is instantiated in the PHP page
+		//in which this game is embedded.
+		//Call out to the Facebook API to store the score
+		///USER_ID/scores, score = monstersCaught
+		
+		storedScore = 0;
+		
+		/* Ajax
+		$.ajax({
+        	type: "GET",
+        	url: "https://graph.facebook.com/" + playerId + "/scores?access_token=" + playerAccessToken,
+        	success: function (data) { 
+        		console.log(data); 
+        		//Mark score as sent
+				//if return is true
+				scoreGot = true;
+        	},
+        	failure: function (errMsg) {
+            	scoreGetFailure = true;
+            	console.log(errMsg);
+        	}
+    	});	
+    	*/
+    	
+		// Facebook Version
+    	FB.api('/me/scores/', 'get', {}, function(response) {
+        	console.log("Score retrieved from Facebook");
+        	storedScore = response.data;
+        	scoreGot = true;
+    	});	
+    	
+    	return storedScore;
+}
+
+//Retrieve Score From FB
+var sendFacebookScore = function() {
+		//Player ID is instantiated in the PHP page
+		//in which this game is embedded.
+		//Call out to the Facebook API to store the score
+		///USER_ID/scores, score = monstersCaught
+		
+		/* AJAX VERSION
+		$.ajax({
+        	type: "POST",
+        	url: "https://graph.facebook.com/" + playerId + "/scores?score=" + monstersCaught + "&access_token=" + playerAccessToken,
+        	success: function (data) { 
+        		console.log(data); 
+        		//Mark score as sent
+				//if return is true
+				scoreSent = true;
+        	},
+        	failure: function (errMsg) {
+            	scoreSendFailure = true;
+            	console.log(errMsg);
+        	}
+    	});	
+    	*/
+    	
+    	// Facebook Version
+    	FB.api('/me/scores/', 'post', { score: monstersCaught }, function(response) {
+        	console.log("Score posted to Facebook");
+        	scoreSent = true;
+    	});	
+}
 
 /* ==============================================
  * 
@@ -652,9 +744,6 @@ var renderSelectScreen = function() {
 	
 	ctx.font = "16px Helvetica";
 	
-	
-	
-	
 	if (hero1Ready) { 
 		ctx.drawImage(hero1Image, canvas.width/2 - 90, canvas.height/2 - 50); 
 		ctx.fillText("Warrior", canvas.width/2 - 40, canvas.height/2 - 40);
@@ -685,12 +774,14 @@ var renderEffects = function () {
 //Render menus
 var renderMenus = function() {
 	if (!gameStarted && !characterSelected) {
+		getHighScore();
 		renderStartScreen();
 	}
 	if (gameStarted && !characterSelected) {
 		renderSelectScreen();
 	}
 	if (gameOver) {
+		processGameEnd();
 		renderGameEnd();
 	}
 };
